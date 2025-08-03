@@ -8,14 +8,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
@@ -71,12 +70,20 @@ public class PlayerListener implements Listener {
 
         Material material = Material.valueOf(materialName);
         ItemStack item = new ItemStack(material);
+
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(mm.deserialize(name));
-        meta.lore(lore.stream().map(mm::deserialize).toList());
-        item.setItemMeta(meta);
+        if (meta != null) {
+            meta.displayName(mm.deserialize(name));
+            meta.lore(lore.stream().map(mm::deserialize).toList());
+
+            NamespacedKey key = new NamespacedKey(JavaPlugin.getProvidingPlugin(getClass()), "menu");
+            meta.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
+
+            item.setItemMeta(meta);
+        }
 
         event.getPlayer().getInventory().setItem(slot, item);
+
     }
 
     @EventHandler
@@ -93,14 +100,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getWhoClicked() instanceof Player player) {
-            int slot = main.getConfig().getInt("item.slot");
-            if (event.getSlot() == slot) {
-                event.setCancelled(true);
-                String command = main.getConfig().getString("item.command");
-                player.performCommand(command);
-                return;
-            }
+        if (event.getWhoClicked() instanceof org.bukkit.entity.Player) {
             event.setCancelled(true);
         }
     }
@@ -118,5 +118,25 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem();
+
+        if (item == null || !item.hasItemMeta()) return;
+
+        ItemMeta meta = item.getItemMeta();
+        NamespacedKey menu = new NamespacedKey(JavaPlugin.getProvidingPlugin(getClass()), "menu");
+
+        if (meta.getPersistentDataContainer().has(menu, PersistentDataType.BYTE)) {
+            event.setCancelled(true);
+
+            String command = main.getConfig().getString("onjoin.item.command");
+            if (command != null && !command.isEmpty()) {
+                player.performCommand(command);
+            }
+        }
     }
 }
