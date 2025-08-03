@@ -21,4 +21,11 @@ onjoin:
       - "<gray>Clique pour ouvrir le menu"
     slot: 4
     command: "menu"
+  teleport:
+    world: "world"
+    x: 0
+    y: 100
+    z: 0
+    yaw: 180
+    pitch: 0
 onquit: "<#ff0044>- <#5a6988>{pseudo} <#ff0044>(<#5a6988>{joueur}<#ff0044>/<#5a6988>{joueurmax}<#ff0044>)"

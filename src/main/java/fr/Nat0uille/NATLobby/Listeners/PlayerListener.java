@@ -3,8 +3,8 @@ package fr.Nat0uille.NATLobby.Listeners;
 import fr.Nat0uille.NATLobby.Main;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.*;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.GameMode;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -41,15 +40,29 @@ public class PlayerListener implements Listener {
         event.getPlayer().setLevel(0);
         event.getPlayer().setGameMode(GameMode.ADVENTURE);
 
-
-        Component prefix = mm.deserialize(main.getConfig().getString("prefix"));
         Component joinMessage = mm.deserialize(
                 main.getConfig().getString("onjoin.message")
                         .replace("{pseudo}", event.getPlayer().getName())
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        event.getPlayer().sendMessage(prefix.append(joinMessage));
+        event.getPlayer().sendMessage(joinMessage);
+
+        ConfigurationSection tp = main.getConfig().getConfigurationSection("onjoin.teleport");
+        if (tp != null) {
+            String worldName = tp.getString("world");
+            double x = tp.getDouble("x");
+            double y = tp.getDouble("y");
+            double z = tp.getDouble("z");
+            float yaw = (float) tp.getDouble("yaw");
+            float pitch = (float) tp.getDouble("pitch");
+
+            World world = Bukkit.getWorld(worldName);
+            if (world != null) {
+                Location loc = new Location(world, x, y, z, yaw, pitch);
+                event.getPlayer().teleport(loc);
+            }
+        }
 
         String materialName = main.getConfig().getString("onjoin.item.material");
         String name = main.getConfig().getString("onjoin.item.name");
@@ -69,17 +82,16 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         event.setQuitMessage(null);
-        Component prefix = mm.deserialize(main.getConfig().getString("prefix"));
         Component quitMessage = mm.deserialize(
                 main.getConfig().getString("onquit")
                         .replace("{pseudo}", event.getPlayer().getName())
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        event.getPlayer().sendMessage(prefix.append(quitMessage));
+        event.getPlayer().sendMessage(quitMessage);
     }
 
-    EventHandler
+    @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getWhoClicked() instanceof Player player) {
             int slot = main.getConfig().getInt("item.slot");
