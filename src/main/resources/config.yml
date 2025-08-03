@@ -1,0 +1,24 @@
+#############################################
+# Fichier de configuration NAT-MOTD          #
+# Par Nat0uille                             #
+#############################################
+# Tous les textes utilise le format MiniMessage, si vous utilisez autre chose ça fonctionnera pas !!!
+# Pour créer vos messages, vous pouvez utiliser le site https://webui.advntr.dev/
+
+prefix: "<bold><gradient:#C70000:#951919>NAT-Lobby</gradient></bold> <gray>• "
+nopermission: "<#C70000><bold>✖</bold> Vous n'avez pas la permission d'exécuter cette commande."
+
+# Variables disponibles :
+# - {pseudo} : Pseudo du joueur
+# - {joueur} : Nombre de joueurs actuellement dans le lobby
+# - {joueurmax} : Nombre maximum de joueurs autorisés dans le lobby
+onjoin:
+  message: "<#63c74d>+ <#5a6988>{pseudo} <#63c74d>(<#5a6988>{joueur}<#63c74d>/<#5a6988>{joueurmax}<#63c74d>)"
+  item:
+    material: NETHER_STAR
+    name: "<green>Menu"
+    lore:
+      - "<gray>Clique pour ouvrir le menu"
+    slot: 4
+    command: "menu"
+onquit: "<#ff0044>- <#5a6988>{pseudo} <#ff0044>(<#5a6988>{joueur}<#ff0044>/<#5a6988>{joueurmax}<#ff0044>)"
