@@ -46,7 +46,7 @@ public class PlayerListener implements Listener {
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        event.getPlayer().sendMessage(joinMessage);
+        Bukkit.broadcast(joinMessage);
 
         ConfigurationSection tp = main.getConfig().getConfigurationSection("onjoin.teleport");
         if (tp != null) {
@@ -96,7 +96,7 @@ public class PlayerListener implements Listener {
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        event.getPlayer().sendMessage(quitMessage);
+        Bukkit.broadcast(quitMessage);
     }
 
     @EventHandler
