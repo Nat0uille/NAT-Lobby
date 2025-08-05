@@ -15,18 +15,17 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
+import java.util.*;
 
 public class PlayerListener implements Listener {
 
     private final Main main;
     MiniMessage mm = MiniMessage.miniMessage();
+    private final Map<Integer, List<String>> itemCommands = new HashMap<>();
 
     public PlayerListener(Main main) {
         this.main = main;
-
     }
 
     @EventHandler
@@ -40,23 +39,25 @@ public class PlayerListener implements Listener {
         event.getPlayer().setLevel(0);
         event.getPlayer().setGameMode(GameMode.ADVENTURE);
 
+        // Message de join
         Component joinMessage = mm.deserialize(
-                main.getConfig().getString("onjoin.message")
-                        .replace("{pseudo}", event.getPlayer().getName())
-                        .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                        .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
+                main.getConfig().getString("OnJoin.Message")
+                        .replace("{prefix}", main.getConfig().getString("Prefix"))
+                        .replace("{player}", event.getPlayer().getName())
+                        .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
+                        .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
         );
         Bukkit.broadcast(joinMessage);
 
-        ConfigurationSection tp = main.getConfig().getConfigurationSection("onjoin.teleport");
+        // Téléportation
+        ConfigurationSection tp = main.getConfig().getConfigurationSection("OnJoin.Teleport");
         if (tp != null) {
-            String worldName = tp.getString("world");
-            double x = tp.getDouble("x");
-            double y = tp.getDouble("y");
-            double z = tp.getDouble("z");
-            float yaw = (float) tp.getDouble("yaw");
-            float pitch = (float) tp.getDouble("pitch");
-
+            String worldName = tp.getString("World");
+            double x = tp.getDouble("X");
+            double y = tp.getDouble("Y");
+            double z = tp.getDouble("Z");
+            float yaw = (float) tp.getDouble("Yaw");
+            float pitch = (float) tp.getDouble("Pitch");
             World world = Bukkit.getWorld(worldName);
             if (world != null) {
                 Location loc = new Location(world, x, y, z, yaw, pitch);
@@ -64,27 +65,38 @@ public class PlayerListener implements Listener {
             }
         }
 
-        String materialName = main.getConfig().getString("onjoin.item.material");
-        String name = main.getConfig().getString("onjoin.item.name");
-        List<String> lore = main.getConfig().getStringList("onjoin.item.lore");
-        int slot = main.getConfig().getInt("onjoin.item.slot");
-
-        Material material = Material.valueOf(materialName);
-        ItemStack item = new ItemStack(material);
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(mm.deserialize(name));
-            meta.lore(lore.stream().map(mm::deserialize).toList());
-
-            NamespacedKey key = new NamespacedKey(JavaPlugin.getProvidingPlugin(getClass()), "menu");
-            meta.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
-
-            item.setItemMeta(meta);
+        // Items personnalisés
+        itemCommands.clear();
+        ConfigurationSection itemsSection = main.getConfig().getConfigurationSection("OnJoin.Items");
+        if (itemsSection != null) {
+            for (String key : itemsSection.getKeys(false)) {
+                if (itemCommands.size() >= 9) break;
+                ConfigurationSection itemSec = itemsSection.getConfigurationSection(key);
+                if (itemSec == null) continue;
+                String materialName = itemSec.getString("Material");
+                String name = itemSec.getString("Name");
+                List<String> lore = itemSec.getStringList("Lore");
+                int slot = itemSec.getInt("Slot");
+                List<String> Commands = itemSec.getStringList("Commands");
+                Material material = Material.matchMaterial(materialName);
+                if (material == null) continue;
+                ItemStack item = new ItemStack(material);
+                ItemMeta meta = item.getItemMeta();
+                if (meta != null) {
+                    meta.displayName(mm.deserialize("<yellow><!i>" + name));
+                    meta.lore(lore.stream().map(mm::deserialize).toList());
+                    NamespacedKey keyMenu = new NamespacedKey("natlobby", "item_" + slot);
+                    meta.getPersistentDataContainer().set(keyMenu, PersistentDataType.BYTE, (byte) 1);
+                    meta.getPersistentDataContainer().set(
+                        new NamespacedKey("natlobby", "item_slot_" + slot),
+                        PersistentDataType.INTEGER, slot
+                    );
+                    item.setItemMeta(meta);
+                }
+                event.getPlayer().getInventory().setItem(slot, item);
+                itemCommands.put(slot, Commands);
+            }
         }
-
-        event.getPlayer().getInventory().setItem(slot, item);
-
     }
 
     @EventHandler
@@ -93,6 +105,7 @@ public class PlayerListener implements Listener {
         Component quitMessage = mm.deserialize(
                 main.getConfig().getString("onquit")
                         .replace("{pseudo}", event.getPlayer().getName())
+                        .replace("{prefix}", main.getConfig().getString("Prefix"))
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{joueurmax}", String.valueOf(Bukkit.getMaxPlayers()))
         );
@@ -130,18 +143,37 @@ public class PlayerListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
-
         if (item == null || !item.hasItemMeta()) return;
-
         ItemMeta meta = item.getItemMeta();
-        NamespacedKey menu = new NamespacedKey(JavaPlugin.getProvidingPlugin(getClass()), "menu");
 
-        if (meta.getPersistentDataContainer().has(menu, PersistentDataType.BYTE)) {
-            event.setCancelled(true);
+        for (int i = 0; i < 9; i++) {
+            NamespacedKey keySlot = new NamespacedKey("natlobby", "item_slot_" + i);
+            Integer slot = meta.getPersistentDataContainer().get(keySlot, PersistentDataType.INTEGER);
+            if (slot != null) {
+                NamespacedKey keyMenu = new NamespacedKey("natlobby", "item_" + slot);
+                if (!meta.getPersistentDataContainer().has(keyMenu, PersistentDataType.BYTE)) continue;
 
-            String command = main.getConfig().getString("onjoin.item.command");
-            if (command != null && !command.isEmpty()) {
-                player.performCommand(command);
+                List<String> commands = itemCommands.get(slot);
+                if (commands == null) return;
+
+                event.setCancelled(true);
+                for (String cmd : commands) {
+                    if (cmd.startsWith("[PLAYER] ")) {
+                        player.performCommand(cmd.substring(9));
+                    } else if (cmd.startsWith("[CONSOLE] ")) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.substring(10).replace("{player}", player.getName()));
+                    } else if (cmd.startsWith("[WORLD] ")) {
+                        String[] args = cmd.substring(8).split(" ");
+                        if (args.length >= 4) {
+                            World world = Bukkit.getWorld(args[0]);
+                            double x = Double.parseDouble(args[1]);
+                            double y = Double.parseDouble(args[2]);
+                            double z = Double.parseDouble(args[3]);
+                            if (world != null) player.teleport(new Location(world, x, y, z));
+                        }
+                    }
+                }
+                return;
             }
         }
     }

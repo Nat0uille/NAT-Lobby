@@ -5,27 +5,36 @@
 # Tous les textes utilise le format MiniMessage, si vous utilisez autre chose ça fonctionnera pas !!!
 # Pour créer vos messages, vous pouvez utiliser le site https://webui.advntr.dev/
 
-prefix: "<bold><gradient:#C70000:#951919>NAT-Lobby</gradient></bold> <gray>• "
-nopermission: "<#C70000><bold>✖</bold> Vous n'avez pas la permission d'exécuter cette commande."
+Prefix: "<bold><gradient:#C70000:#951919>NAT-Lobby</gradient></bold> <gray>• "
+NoPermission: "<#C70000><bold>✖</bold> Vous n'avez pas la permission d'exécuter cette commande."
 
-# Variables disponibles :
-# - {pseudo} : Pseudo du joueur
-# - {joueur} : Nombre de joueurs actuellement dans le lobby
-# - {joueurmax} : Nombre maximum de joueurs autorisés dans le lobby
-onjoin:
-  message: "<#63c74d>+ <#5a6988>{pseudo} <#63c74d>(<#5a6988>{joueur}<#63c74d>/<#5a6988>{joueurmax}<#63c74d>)"
-  item:
-    material: NETHER_STAR
-    name: "<green>Menu"
-    lore:
-      - "<gray>Clique pour ouvrir le menu"
-    slot: 4
-    command: "menu"
-  teleport:
-    world: "world"
-    x: 0
-    y: 100
-    z: 0
-    yaw: 180
-    pitch: 0
-onquit: "<#ff0044>- <#5a6988>{pseudo} <#ff0044>(<#5a6988>{joueur}<#ff0044>/<#5a6988>{joueurmax}<#ff0044>)"
+OnJoin:
+  # Choix disponibles : SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR
+  Gamemmode : ADVENTURE
+  # Message affiché au joueur lors de son arrivée dans le lobby
+  # Choix disponibles : {prefix}, {player}, {online-players}, {max-players}
+  Message: "{prefix}<#63c74d>+ <#5a6988>{player} <#63c74d>(<#5a6988>{online-players}<#63c74d>/<#5a6988>{max-players}<#63c74d>)"
+  # Items dans la hotbar du joueur
+  # 9 emplacements disponibles, de 0 à 8
+  Items:
+    1:
+      Material: NETHER_STAR
+      Name: "<green>Menu"
+      Lore:
+        - "<gray>Clique pour ouvrir le menu"
+      Slot: 4
+      # Choix disponibles : [PLAYER] : Commande exécuté par le joueur,
+      #                     [CONSOLE] : Commande exécuté par la console,
+      #                     [WORLD] téléporation a un endroit précis exemple : [WORLD] world 0 100 0
+      Commands:
+      - "[PLAYER] menu"
+  Teleport:
+    World: "world"
+    X: 0
+    Y: 100
+    Z: 0
+    Yaw: 180
+    Pitch: 0
+  # Message affiché au joueur lors de son départ dans le lobby
+  # Choix disponibles : {prefix}, {player}, {online-players}, {max-players}
+OnQuit: "{prefix}<#ff0044>- <#5a6988>{player}} <#ff0044>(<#5a6988>{online-players}<#ff0044>/<#5a6988>{max-players}<#ff0044>)"
