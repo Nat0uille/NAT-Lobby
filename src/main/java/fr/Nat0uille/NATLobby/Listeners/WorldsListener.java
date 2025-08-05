@@ -14,6 +14,7 @@ public class WorldsListener implements Listener {
         world.setGameRuleValue("keepInventory", "true");
         world.setGameRuleValue("doMobSpawning", "false");
         world.setGameRuleValue("doWeatherCycle", "false");
+        world.setGameRuleValue("announceAdvancements", "false");
         world.setTime(6000);
         world.setDifficulty(Difficulty.PEACEFUL);
     }
