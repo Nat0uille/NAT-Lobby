@@ -38,3 +38,11 @@ OnJoin:
   # Message affiché au joueur lors de son départ dans le lobby
   # Choix disponibles : {prefix}, {player}, {online-players}, {max-players}
 OnQuit: "{prefix}<#ff0044>- <#5a6988>{player}} <#ff0044>(<#5a6988>{online-players}<#ff0044>/<#5a6988>{max-players}<#ff0044>)"
+
+Commands:
+  Spawn: "<green>Vous avez été téléporté au spawn."
+  SpawnConsole: "<red>Vous ne pouvez pas vous téléporter au spawn en étant la console."
+  # Choix disponibles : {target} : Nom du joueur ciblé
+  SpawnTargetSender: "<green>Vous avez téléporté {target} au spawn."
+  # Choix disponibles : {target} : Nom du joueur ciblé
+  SpawnTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."
