@@ -103,7 +103,7 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         event.setQuitMessage(null);
         Component quitMessage = mm.deserialize(
-                main.getConfig().getString("onquit")
+                main.getConfig().getString("OnQuit")
                         .replace("{pseudo}", event.getPlayer().getName())
                         .replace("{prefix}", main.getConfig().getString("Prefix"))
                         .replace("{joueur}", String.valueOf(Bukkit.getOnlinePlayers().size()))
