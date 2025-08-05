@@ -6,7 +6,6 @@
 # Pour créer vos messages, vous pouvez utiliser le site https://webui.advntr.dev/
 
 Prefix: "<bold><gradient:#C70000:#951919>NAT-Lobby</gradient></bold> <gray>• "
-NoPermission: "<#C70000><bold>✖</bold> Vous n'avez pas la permission d'exécuter cette commande."
 
 OnJoin:
   # Choix disponibles : SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR
@@ -40,9 +39,12 @@ OnJoin:
 OnQuit: "{prefix}<#ff0044>- <#5a6988>{player}} <#ff0044>(<#5a6988>{online-players}<#ff0044>/<#5a6988>{max-players}<#ff0044>)"
 
 Commands:
+  NoPermission: "<#C70000><bold>✖</bold> Vous n'avez pas la permission d'exécuter cette commande."
   Spawn: "<green>Vous avez été téléporté au spawn."
   SpawnConsole: "<red>Vous ne pouvez pas vous téléporter au spawn en étant la console."
   # Choix disponibles : {target} : Nom du joueur ciblé
   SpawnTargetSender: "<green>Vous avez téléporté {target} au spawn."
   # Choix disponibles : {target} : Nom du joueur ciblé
   SpawnTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."
+  SetSpawn: "<green>Le spawn a été défini à votre position actuelle."
+  SetSpawnConsole: "<red>Vous ne pouvez pas définir le spawn en étant la console."

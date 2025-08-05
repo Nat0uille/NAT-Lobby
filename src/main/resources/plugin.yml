@@ -7,3 +7,6 @@ authors: [ Nat0uille ]
 commands:
   spawn:
     aliases: sp
+    usage: /<command>
+  setspawn:
+    usage: /<command>

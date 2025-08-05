@@ -18,6 +18,7 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WorldsListener(), this);
 
         getCommand("spawn").setExecutor(new SpawnCommand(this));
+        getCommand("setspawn").setExecutor(new SetSpawnCommand(this));
     }
 
     @Override
