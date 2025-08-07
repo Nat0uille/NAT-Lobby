@@ -48,3 +48,10 @@ Commands:
   SpawnTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."
   SetSpawn: "<green>Le spawn a été défini à votre position actuelle."
   SetSpawnConsole: "<red>Vous ne pouvez pas définir le spawn en étant la console."
+  FlyDisabled: "<red>Le vol a été désactivé."
+  FlyEnabled: "<green>Le vol a été activé."
+  FlyConsole: "<red>Vous ne pouvez pas activer le vol en étant la console."
+  # Choix disponibles : {target} : Nom du joueur ciblé
+  FlyTargetSender: "<green>Vous avez changé le vol de {target}."
+  # Choix disponibles : {target} : Nom du joueur ciblé
+  FlyTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."

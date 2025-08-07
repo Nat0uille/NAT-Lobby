@@ -1,5 +1,5 @@
 name: NAT-Lobby
-version: '1.0'
+version: ${version}
 main: fr.Nat0uille.NATLobby.Main
 api-version: '1.21'
 load: STARTUP
@@ -10,3 +10,18 @@ commands:
     usage: /<command>
   setspawn:
     usage: /<command>
+  fly:
+    usage: /<command> [player]
+permissions:
+  natlobby.fly:
+    default: op
+  natlobby.fly.other:
+    default: op
+  natlobby.setspawn:
+    default: op
+  natlobby.admin:
+    default: op
+    children:
+      natlobby.fly: true
+      natlobby.fly.other: true
+      natlobby.spawn: true

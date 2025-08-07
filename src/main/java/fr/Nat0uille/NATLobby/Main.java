@@ -19,6 +19,7 @@ public final class Main extends JavaPlugin {
 
         getCommand("spawn").setExecutor(new SpawnCommand(this));
         getCommand("setspawn").setExecutor(new SetSpawnCommand(this));
+        getCommand("fly").setExecutor(new FlyCommand(this));
     }
 
     @Override
