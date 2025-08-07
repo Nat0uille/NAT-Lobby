@@ -55,3 +55,7 @@ Commands:
   FlyTargetSender: "<green>Vous avez changé le vol de {target}."
   # Choix disponibles : {target} : Nom du joueur ciblé
   FlyTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."
+
+  NatLobby:
+    Help: "<green>Menu d'aide</green>"
+    Reload: "<green>Le plugin a été rechargé avec succès.</green>"
