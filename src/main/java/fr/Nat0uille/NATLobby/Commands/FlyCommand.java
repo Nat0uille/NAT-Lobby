@@ -30,9 +30,9 @@ public class FlyCommand implements CommandExecutor {
                 boolean isFlying = player.getAllowFlight();
                 player.setAllowFlight(!isFlying);
                 if (isFlying) {
-                    player.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled")));
+                    player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled"))));
                 } else {
-                    player.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled")));
+                    player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
                     addParticles(player);
                 }
             } else {
@@ -50,16 +50,16 @@ public class FlyCommand implements CommandExecutor {
                 boolean isFlying = target.getAllowFlight();
                 target.setAllowFlight(!isFlying);
                 if (isFlying) {
-                    target.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled")));
+                    target.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled"))));
                 } else {
-                    target.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled")));
+                    target.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
                     addParticles(target);
                 }
-                sender.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyTargetSender")
-                        .replace("{target}", target.getName())));
+                sender.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyTargetSender")
+                        .replace("{target}", target.getName()))));
             } else {
-                sender.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyTargetNotFound")
-                        .replace("{target}", args[0])));
+                sender.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyTargetNotFound")
+                        .replace("{target}", args[0]))));
             }
         }
         return true;
