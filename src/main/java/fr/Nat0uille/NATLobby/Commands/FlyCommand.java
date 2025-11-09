@@ -3,12 +3,10 @@ package fr.Nat0uille.NATLobby.Commands;
 import fr.Nat0uille.NATLobby.Main;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Particle;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class FlyCommand implements CommandExecutor {

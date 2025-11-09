@@ -23,7 +23,8 @@ public class PlayerListener implements Listener {
 
     private final Main main;
     MiniMessage mm = MiniMessage.miniMessage();
-    private final Map<Integer, List<String>> itemCommands = new HashMap<>();
+    // commandes par joueur: uuid -> (slot -> commands)
+    private final Map<java.util.UUID, Map<Integer, List<String>>> itemCommands = new HashMap<>();
 
     public PlayerListener(Main main) {
         this.main = main;
@@ -40,20 +41,22 @@ public class PlayerListener implements Listener {
         event.getPlayer().setLevel(0);
         event.getPlayer().setGameMode(GameMode.ADVENTURE);
 
-        // Restauration de l'état fly depuis stats.yml
         FileConfiguration stats = main.getStats();
         String uuid = event.getPlayer().getUniqueId().toString();
         boolean fly = stats.getBoolean("players." + uuid + ".fly", false);
         Player player = event.getPlayer();
         player.setAllowFlight(fly);
         if (fly) {
-            // Activer le vol immédiatement
             player.setFlying(true);
-            // Optionnel: prévenir le joueur qu'il a le fly activé
             player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
         }
 
-        // Message de join
+        boolean build = main.isBuild(player.getUniqueId());
+        if (build) {
+            player.setGameMode(GameMode.CREATIVE);
+            player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.BuildEnabled"))));
+        }
+
         Component joinMessage = mm.deserialize(
                 main.getConfig().getString("OnJoin.Message")
                         .replace("{prefix}", main.getConfig().getString("Prefix"))
@@ -63,7 +66,6 @@ public class PlayerListener implements Listener {
         );
         Bukkit.broadcast(joinMessage);
 
-        // Téléportation
         ConfigurationSection tp = main.getConfig().getConfigurationSection("OnJoin.Teleport");
         if (tp != null) {
             String worldName = tp.getString("World");
@@ -79,12 +81,19 @@ public class PlayerListener implements Listener {
             }
         }
 
-        // Items personnalisés
-        itemCommands.clear();
+        // appliquer la hotbar du lobby pour ce joueur
+        applyLobbyItems(player);
+    }
+
+    public void applyLobbyItems(Player player) {
+        // clear previous entries for this player
+        itemCommands.remove(player.getUniqueId());
+        Map<Integer, List<String>> commandsForPlayer = new HashMap<>();
+
         ConfigurationSection itemsSection = main.getConfig().getConfigurationSection("OnJoin.Items");
         if (itemsSection != null) {
             for (String key : itemsSection.getKeys(false)) {
-                if (itemCommands.size() >= 9) break;
+                if (commandsForPlayer.size() >= 9) break;
                 ConfigurationSection itemSec = itemsSection.getConfigurationSection(key);
                 if (itemSec == null) continue;
                 String materialName = itemSec.getString("Material");
@@ -107,20 +116,23 @@ public class PlayerListener implements Listener {
                     );
                     item.setItemMeta(meta);
                 }
-                event.getPlayer().getInventory().setItem(slot, item);
-                itemCommands.put(slot, Commands);
+                player.getInventory().setItem(slot, item);
+                commandsForPlayer.put(slot, Commands);
             }
         }
+
+        itemCommands.put(player.getUniqueId(), commandsForPlayer);
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        // Sauvegarde de l'état fly du joueur dans stats.yml
         Player player = event.getPlayer();
         FileConfiguration stats = main.getStats();
         String uuid = player.getUniqueId().toString();
         stats.set("players." + uuid + ".fly", player.getAllowFlight());
-        main.saveStats();
+
+        // nettoyer les commandes enregistrées pour le joueur
+        itemCommands.remove(player.getUniqueId());
 
         event.setQuitMessage(null);
         Component quitMessage = mm.deserialize(
@@ -136,23 +148,35 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getWhoClicked() instanceof org.bukkit.entity.Player) {
-            event.setCancelled(true);
+            Player player = (Player) event.getWhoClicked();
+            boolean build = main.isBuild(player.getUniqueId());
+            if (!build) event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        event.setCancelled(true);
+        if (event.getWhoClicked() instanceof org.bukkit.entity.Player) {
+            Player player = (Player) event.getWhoClicked();
+            boolean build = main.isBuild(player.getUniqueId());
+            if (!build) event.setCancelled(true);
+        } else {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
-        event.setCancelled(true);
+        Player player = event.getPlayer();
+        boolean build = main.isBuild(player.getUniqueId());
+        if (!build) event.setCancelled(true);
     }
 
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
-        event.setCancelled(true);
+        Player player = event.getPlayer();
+        boolean build = main.isBuild(player.getUniqueId());
+        if (!build) event.setCancelled(true);
     }
 
     @EventHandler
@@ -167,6 +191,9 @@ public class PlayerListener implements Listener {
         if (item == null || !item.hasItemMeta()) return;
         ItemMeta meta = item.getItemMeta();
 
+        Map<Integer, List<String>> commandsForPlayer = itemCommands.get(player.getUniqueId());
+        if (commandsForPlayer == null) return;
+
         for (int i = 0; i < 9; i++) {
             NamespacedKey keySlot = new NamespacedKey("natlobby", "item_slot_" + i);
             Integer slot = meta.getPersistentDataContainer().get(keySlot, PersistentDataType.INTEGER);
@@ -174,10 +201,23 @@ public class PlayerListener implements Listener {
                 NamespacedKey keyMenu = new NamespacedKey("natlobby", "item_" + slot);
                 if (!meta.getPersistentDataContainer().has(keyMenu, PersistentDataType.BYTE)) continue;
 
-                List<String> commands = itemCommands.get(slot);
+                List<String> commands = commandsForPlayer.get(slot);
                 if (commands != null) {
                     for (String command : commands) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{player}", player.getName()));
+                        if (command.startsWith("[PLAYER] ")) {
+                            player.performCommand(command.substring(9));
+                        } else if (command.startsWith("[CONSOLE] ")) {
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(10).replace("{player}", player.getName()));
+                        } else if (command.startsWith("[WORLD] ")) {
+                            String[] args = command.substring(8).split(" ");
+                            if (args.length >= 4) {
+                                World world = Bukkit.getWorld(args[0]);
+                                double x = Double.parseDouble(args[1]);
+                                double y = Double.parseDouble(args[2]);
+                                double z = Double.parseDouble(args[3]);
+                                if (world != null) player.teleport(new Location(world, x, y, z));
+                            }
+                        }
                     }
                 }
             }

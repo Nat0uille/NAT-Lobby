@@ -12,12 +12,16 @@ commands:
     usage: /<command>
   fly:
     usage: /<command> [player]
+  build:
+    usage: /<command>
   nat-lobby:
     usage : /<command> [reload]
 permissions:
   natlobby.fly:
     default: op
   natlobby.fly.other:
+    default: op
+  natlobby.build:
     default: op
   natlobby.setspawn:
     default: op
@@ -28,5 +32,6 @@ permissions:
     children:
       natlobby.fly: true
       natlobby.fly.other: true
+      natlobby.build: true
       natlobby.spawn: true
       natlobby.reload: true

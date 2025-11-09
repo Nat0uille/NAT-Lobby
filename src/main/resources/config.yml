@@ -55,6 +55,9 @@ Commands:
   FlyTargetSender: "<green>Vous avez changé le vol de {target}."
   # Choix disponibles : {target} : Nom du joueur ciblé
   FlyTargetNotFound: "<red>Le joueur {target} n'a pas été trouvé."
+  BuildEnabled: "<green>Mode build activé. Vous êtes en créatif et pouvez utiliser votre hotbar."
+  BuildDisabled: "<red>Mode build désactivé. Retour en adventure."
+  BuildConsole: "<red>Vous ne pouvez pas activer le mode build en étant la console."
 
   NatLobby:
     Help: "<green>Menu d'aide</green>"
