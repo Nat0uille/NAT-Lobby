@@ -15,6 +15,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.*;
 
@@ -38,6 +39,19 @@ public class PlayerListener implements Listener {
         event.getPlayer().setExp(0);
         event.getPlayer().setLevel(0);
         event.getPlayer().setGameMode(GameMode.ADVENTURE);
+
+        // Restauration de l'état fly depuis stats.yml
+        FileConfiguration stats = main.getStats();
+        String uuid = event.getPlayer().getUniqueId().toString();
+        boolean fly = stats.getBoolean("players." + uuid + ".fly", false);
+        Player player = event.getPlayer();
+        player.setAllowFlight(fly);
+        if (fly) {
+            // Activer le vol immédiatement
+            player.setFlying(true);
+            // Optionnel: prévenir le joueur qu'il a le fly activé
+            player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
+        }
 
         // Message de join
         Component joinMessage = mm.deserialize(
@@ -101,6 +115,13 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+        // Sauvegarde de l'état fly du joueur dans stats.yml
+        Player player = event.getPlayer();
+        FileConfiguration stats = main.getStats();
+        String uuid = player.getUniqueId().toString();
+        stats.set("players." + uuid + ".fly", player.getAllowFlight());
+        main.saveStats();
+
         event.setQuitMessage(null);
         Component quitMessage = mm.deserialize(
                 main.getConfig().getString("OnQuit")
@@ -154,26 +175,11 @@ public class PlayerListener implements Listener {
                 if (!meta.getPersistentDataContainer().has(keyMenu, PersistentDataType.BYTE)) continue;
 
                 List<String> commands = itemCommands.get(slot);
-                if (commands == null) return;
-
-                event.setCancelled(true);
-                for (String cmd : commands) {
-                    if (cmd.startsWith("[PLAYER] ")) {
-                        player.performCommand(cmd.substring(9));
-                    } else if (cmd.startsWith("[CONSOLE] ")) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.substring(10).replace("{player}", player.getName()));
-                    } else if (cmd.startsWith("[WORLD] ")) {
-                        String[] args = cmd.substring(8).split(" ");
-                        if (args.length >= 4) {
-                            World world = Bukkit.getWorld(args[0]);
-                            double x = Double.parseDouble(args[1]);
-                            double y = Double.parseDouble(args[2]);
-                            double z = Double.parseDouble(args[3]);
-                            if (world != null) player.teleport(new Location(world, x, y, z));
-                        }
+                if (commands != null) {
+                    for (String command : commands) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{player}", player.getName()));
                     }
                 }
-                return;
             }
         }
     }

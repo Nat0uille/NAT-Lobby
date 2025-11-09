@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class FlyCommand implements CommandExecutor {
 
@@ -29,11 +30,11 @@ public class FlyCommand implements CommandExecutor {
             if (sender instanceof Player player) {
                 boolean isFlying = player.getAllowFlight();
                 player.setAllowFlight(!isFlying);
+                saveFlyState(player.getUniqueId().toString(), !isFlying);
                 if (isFlying) {
                     player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled"))));
                 } else {
                     player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
-                    addParticles(player);
                 }
             } else {
                 sender.sendMessage(mm.deserialize(main.getConfig().getString("Commands.FlyConsole")));
@@ -49,11 +50,11 @@ public class FlyCommand implements CommandExecutor {
                 Player target = Bukkit.getPlayer(args[0]);
                 boolean isFlying = target.getAllowFlight();
                 target.setAllowFlight(!isFlying);
+                saveFlyState(target.getUniqueId().toString(), !isFlying);
                 if (isFlying) {
                     target.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyDisabled"))));
                 } else {
                     target.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyEnabled"))));
-                    addParticles(target);
                 }
                 sender.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.FlyTargetSender")
                         .replace("{target}", target.getName()))));
@@ -65,25 +66,11 @@ public class FlyCommand implements CommandExecutor {
         return true;
     }
 
-    private void addParticles(Player player) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!player.isOnline() || !player.getAllowFlight()) {
-                    this.cancel();
-                    return;
-                }
-                if (player.isFlying()) {
-                    player.getWorld().spawnParticle(
-                            Particle.CLOUD,
-                            player.getLocation().subtract(0, 1, 0),
-                            20,
-                            0.3, 0.1, 0.3,
-                            0
-                    );
-                }
-            }
-        }.runTaskTimer(main, 0L, 5L);
+
+    private void saveFlyState(String uuid, boolean enabled) {
+        FileConfiguration stats = main.getStats();
+        stats.set("players." + uuid + ".fly", enabled);
+        main.saveStats();
     }
 
 }
