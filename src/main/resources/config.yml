@@ -27,6 +27,14 @@ OnJoin:
       #                     [WORLD] téléporation a un endroit précis exemple : [WORLD] world 0 100 0
       Commands:
       - "[PLAYER] menu"
+#    2:
+#      Material: itemsadder:my_custom_item
+#      Name: "<aqua>Custom IA"
+#      Lore:
+#        - "<gray>Item ItemsAdder depuis son id"
+#      Slot: 0
+#      Commands:
+#      - "[PLAYER] ia-open"
   Teleport:
     World: "world"
     X: 0

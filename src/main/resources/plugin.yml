@@ -4,6 +4,7 @@ main: fr.Nat0uille.NATLobby.Main
 api-version: '1.21'
 load: STARTUP
 authors: [ Nat0uille ]
+softdepend: [ ItemsAdder ]
 commands:
   spawn:
     aliases: sp

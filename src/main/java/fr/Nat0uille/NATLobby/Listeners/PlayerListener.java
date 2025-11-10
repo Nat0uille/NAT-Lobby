@@ -23,7 +23,6 @@ public class PlayerListener implements Listener {
 
     private final Main main;
     MiniMessage mm = MiniMessage.miniMessage();
-    // commandes par joueur: uuid -> (slot -> commands)
     private final Map<java.util.UUID, Map<Integer, List<String>>> itemCommands = new HashMap<>();
 
     public PlayerListener(Main main) {
@@ -81,12 +80,10 @@ public class PlayerListener implements Listener {
             }
         }
 
-        // appliquer la hotbar du lobby pour ce joueur
         applyLobbyItems(player);
     }
 
     public void applyLobbyItems(Player player) {
-        // clear previous entries for this player
         itemCommands.remove(player.getUniqueId());
         Map<Integer, List<String>> commandsForPlayer = new HashMap<>();
 
@@ -101,18 +98,33 @@ public class PlayerListener implements Listener {
                 List<String> lore = itemSec.getStringList("Lore");
                 int slot = itemSec.getInt("Slot");
                 List<String> Commands = itemSec.getStringList("Commands");
-                Material material = Material.matchMaterial(materialName);
-                if (material == null) continue;
-                ItemStack item = new ItemStack(material);
+                ItemStack item = null;
+
+                if (materialName != null && Bukkit.getPluginManager().isPluginEnabled("ItemsAdder") && materialName.contains(":")) {
+                    try {
+                        Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
+                        Object customStack = customStackClass.getMethod("getInstance", String.class).invoke(null, materialName);
+                        if (customStack != null) {
+                            item = (ItemStack) customStackClass.getMethod("getItemStack").invoke(customStack);
+                        }
+                    } catch (Exception ignored) { }
+                }
+
+                if (item == null) {
+                    Material material = Material.matchMaterial(materialName);
+                    if (material == null) continue;
+                    item = new ItemStack(material);
+                }
+
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null) {
-                    meta.displayName(mm.deserialize("<yellow><!i>" + name));
-                    meta.lore(lore.stream().map(mm::deserialize).toList());
+                    if (name != null) meta.displayName(mm.deserialize("<yellow><!i>" + name));
+                    if (lore != null && !lore.isEmpty()) meta.lore(lore.stream().map(mm::deserialize).toList());
                     NamespacedKey keyMenu = new NamespacedKey("natlobby", "item_" + slot);
                     meta.getPersistentDataContainer().set(keyMenu, PersistentDataType.BYTE, (byte) 1);
                     meta.getPersistentDataContainer().set(
-                        new NamespacedKey("natlobby", "item_slot_" + slot),
-                        PersistentDataType.INTEGER, slot
+                            new NamespacedKey("natlobby", "item_slot_" + slot),
+                            PersistentDataType.INTEGER, slot
                     );
                     item.setItemMeta(meta);
                 }
@@ -130,8 +142,6 @@ public class PlayerListener implements Listener {
         FileConfiguration stats = main.getStats();
         String uuid = player.getUniqueId().toString();
         stats.set("players." + uuid + ".fly", player.getAllowFlight());
-
-        // nettoyer les commandes enregistrées pour le joueur
         itemCommands.remove(player.getUniqueId());
 
         event.setQuitMessage(null);

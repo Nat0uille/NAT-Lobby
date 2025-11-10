@@ -42,7 +42,6 @@ public class BuildCommand implements CommandExecutor {
             player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.BuildEnabled"))));
         } else {
             player.setGameMode(GameMode.ADVENTURE);
-            // restaurer la hotbar par défaut du lobby
             main.getPlayerListener().applyLobbyItems(player);
             player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.BuildDisabled"))));
         }
