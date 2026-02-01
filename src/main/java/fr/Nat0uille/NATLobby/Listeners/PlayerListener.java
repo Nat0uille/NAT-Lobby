@@ -63,7 +63,7 @@ public class PlayerListener implements Listener {
                         .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        if (!(main.getConfig().getString("OnJoin.Message") == "")) {
+        if (!(main.getConfig().getString("OnJoin.Message") == "none")) {
         Bukkit.broadcast(joinMessage);}
 
         ConfigurationSection tp = main.getConfig().getConfigurationSection("OnJoin.Teleport");
@@ -153,7 +153,7 @@ public class PlayerListener implements Listener {
                         .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
                         .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
         );
-        if (!(main.getConfig().getString("OnQuit") == "")) {
+        if (!(main.getConfig().getString("OnQuit") == "none")) {
         Bukkit.broadcast(quitMessage);}
     }
 
