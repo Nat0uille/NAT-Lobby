@@ -56,15 +56,17 @@ public class PlayerListener implements Listener {
             player.sendMessage(mm.deserialize(main.getConfig().getString("Prefix")).append(mm.deserialize(main.getConfig().getString("Commands.BuildEnabled"))));
         }
 
-        Component joinMessage = mm.deserialize(
-                main.getConfig().getString("OnJoin.Message")
-                        .replace("{prefix}", main.getConfig().getString("Prefix"))
-                        .replace("{player}", event.getPlayer().getName())
-                        .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                        .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
-        );
-        if (!(main.getConfig().getString("OnJoin.Message") == "none")) {
-        Bukkit.broadcast(joinMessage);}
+        String onJoinConfig = main.getConfig().getString("OnJoin.Message", "none");
+        if (!"none".equalsIgnoreCase(onJoinConfig != null ? onJoinConfig.trim() : "none")) {
+            Component joinMessage = mm.deserialize(
+                    onJoinConfig
+                            .replace("{prefix}", main.getConfig().getString("Prefix"))
+                            .replace("{player}", event.getPlayer().getName())
+                            .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
+                            .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
+            );
+            Bukkit.broadcast(joinMessage);
+        }
 
         ConfigurationSection tp = main.getConfig().getConfigurationSection("OnJoin.Teleport");
         if (tp != null) {
@@ -146,15 +148,17 @@ public class PlayerListener implements Listener {
         itemCommands.remove(player.getUniqueId());
 
         event.setQuitMessage(null);
-        Component quitMessage = mm.deserialize(
-                main.getConfig().getString("OnQuit")
-                        .replace("{prefix}", main.getConfig().getString("Prefix"))
-                        .replace("{player}", event.getPlayer().getName())
-                        .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                        .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
-        );
-        if (!(main.getConfig().getString("OnQuit") == "none")) {
-        Bukkit.broadcast(quitMessage);}
+        String onQuitConfig = main.getConfig().getString("OnQuit", "none");
+        if (!"none".equalsIgnoreCase(onQuitConfig != null ? onQuitConfig.trim() : "none")) {
+            Component quitMessage = mm.deserialize(
+                    onQuitConfig
+                            .replace("{prefix}", main.getConfig().getString("Prefix"))
+                            .replace("{player}", event.getPlayer().getName())
+                            .replace("{online-players}", String.valueOf(Bukkit.getOnlinePlayers().size()))
+                            .replace("{max-players}", String.valueOf(Bukkit.getMaxPlayers()))
+            );
+            Bukkit.broadcast(quitMessage);
+        }
     }
 
     @EventHandler
